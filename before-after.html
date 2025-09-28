@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Before / After GUI slider</title>
+<style>
+  :root{--aspect: calc(2999/6758);}
+  body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;background:#0b0b0b;color:#eee;display:flex;align-items:center;justify-content:center;padding:20px;}
+  .wrap{max-width:100%;width:1200px}
+  .ba-container{position:relative;width:100%; /* aspect ratio */
+    aspect-ratio: 2999 / 6758;
+    background:#000; overflow:hidden; border-radius:6px; box-shadow:0 8px 30px rgba(0,0,0,.6);}
+  .ba-img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;display:block}
+  .ba-bottom{z-index:1}
+  .ba-overlay{position:absolute;left:0;top:0;height:100%;width:50%;overflow:hidden;z-index:2;transition:width .12s linear}
+  .ba-top{position:relative}
+  .handle{position:absolute;top:0;bottom:0;left:50%;width:3px;margin-left:-1.5px;z-index:3;
+         background:linear-gradient(180deg,#fff,#ccc);box-shadow:0 0 10px rgba(0,0,0,.6)}
+  .control-row{margin-top:10px;display:flex;gap:10px;align-items:center}
+  .range{flex:1;appearance:none;height:18px;background:transparent}
+  .range:focus{outline:2px solid #6fb;outline-offset:2px;border-radius:6px}
+  .range::-webkit-slider-thumb{-webkit-appearance:none;height:20px;width:20px;border-radius:50%;border:3px solid #fff;background:#222;box-shadow:0 2px 6px rgba(0,0,0,.6);cursor:grab}
+  .btns{display:flex;gap:8px}
+  .btn{background:#111;border:1px solid rgba(255,255,255,.06);padding:6px 10px;border-radius:6px;color:#ddd;cursor:pointer}
+  .btn:active{transform:translateY(1px)}
+  /* small screens */
+  @media (max-width:760px){ .wrap{width:100%} .range::-webkit-slider-thumb{height:16px;width:16px}}
+</style>
+</head>
+<body>
+  <div class="wrap" aria-label="Before and After GUI preview">
+    <div class="ba-container" id="baContainer" role="img" aria-label="Compare dark and light GUI">
+      <img class="ba-img ba-bottom" src="https://raw.githubusercontent.com/ViTulyankin/Recolourful-Containers-GUI/description/dark/graphic.png" alt="Dark GUI (before)">
+      <div class="ba-overlay" id="overlay">
+        <img class="ba-img ba-top" src="https://raw.githubusercontent.com/ViTulyankin/Recolourful-Containers-GUI/description/light/graphic.png" alt="Light GUI (after)">
+      </div>
+      <div class="handle" id="handle" aria-hidden="true"></div>
+    </div>
+
+    <div class="control-row" style="margin-top:12px;">
+      <input id="range" class="range" type="range" min="0" max="100" value="50" aria-label="Reveal light version">
+      <div class="btns" style="margin-left:8px">
+        <button id="btnLeft" class="btn" title="Show more dark">◀ Dark</button>
+        <button id="btnMid" class="btn" title="Center">50%</button>
+        <button id="btnRight" class="btn" title="Show more light">Light ▶</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+(function(){
+  const range = document.getElementById('range');
+  const overlay = document.getElementById('overlay');
+  const handle = document.getElementById('handle');
+  const container = document.getElementById('baContainer');
+  const btnLeft = document.getElementById('btnLeft');
+  const btnRight = document.getElementById('btnRight');
+  const btnMid = document.getElementById('btnMid');
+
+  function setPos(pct){
+    pct = Math.max(0, Math.min(100, Number(pct)));
+    overlay.style.width = pct + '%';
+    handle.style.left = pct + '%';
+    range.value = pct;
+  }
+
+  // range input controls overlay
+  range.addEventListener('input', e => setPos(e.target.value));
+
+  // click/tap on container moves the handle
+  container.addEventListener('pointerdown', e => {
+    const rect = container.getBoundingClientRect();
+    const pct = ((e.clientX - rect.left) / rect.width) * 100;
+    setPos(pct);
+  });
+
+  // keyboard accessibility
+  range.addEventListener('keydown', e => {
+    let val = Number(range.value);
+    if(e.key === 'ArrowLeft' || e.key === 'ArrowDown'){ e.preventDefault(); setPos(val - 2); }
+    if(e.key === 'ArrowRight' || e.key === 'ArrowUp'){ e.preventDefault(); setPos(val + 2); }
+    if(e.key === 'Home'){ e.preventDefault(); setPos(0); }
+    if(e.key === 'End'){ e.preventDefault(); setPos(100); }
+  });
+
+  // quick buttons
+  btnLeft.addEventListener('click', ()=> setPos(10));
+  btnMid.addEventListener('click', ()=> setPos(50));
+  btnRight.addEventListener('click', ()=> setPos(90));
+
+  // Initialize center
+  setPos(50);
+})();
+</script>
+</body>
+</html>
